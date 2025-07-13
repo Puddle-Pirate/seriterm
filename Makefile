@@ -3,7 +3,7 @@ CXX := g++
 CXXFLAGS := -std=c++20 -Wall -Wextra
 
 # Include paths
-INCLUDES := -Iinc -Iexternal/cxxopts/include
+INCLUDES := -Isrc -Isrc/serial -Iexternal/cxxopts/include
 
 # Source and object files
 SRCDIR := src
