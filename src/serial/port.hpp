@@ -8,6 +8,8 @@
 namespace serial
 {
 
+// Perhaps a bit overkill, but also a neat way of having a 'Baud' object
+// that _must_ be valid on construction.
 struct Baud
 {
    speed_t const baud;
@@ -21,7 +23,7 @@ struct Baud
          case B115200:
             break;
          default:
-         throw SerialException("Unsupported baud rate: " + std::to_string(baud));
+            throw SerialException("Unsupported baud rate: " + std::to_string(baud));
       }
    }
    constexpr operator speed_t() const { return baud; }
@@ -37,6 +39,10 @@ private:
 public:
    Port(std::string const& devicePath, int baudRate);
    ~Port();
+
+   void startReader();
+   void stopReader();
+
 };
 
 }
