@@ -1,7 +1,9 @@
 #pragma once
 
+#include <functional>
 #include <string>
 #include <termios.h>
+#include <thread>
 #include "fd_handle.hpp"
 #include "exception.hpp"
 
@@ -35,13 +37,15 @@ private:
    FdHandle const fdHdl;
    Baud const baud;
    termios originalTTY; // Capture and restore outer terminal settings.
+   std::thread bgReaderThread{};
+   bool doBgRead{false};
 
 public:
    Port(std::string const& devicePath, int baudRate);
    ~Port();
 
-   void startReader();
-   void stopReader();
+   void startBackgroundReader(std::function<void(char)> onByteRx);
+   void stopBackgroundReader();
 
 };
 

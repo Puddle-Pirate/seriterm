@@ -1,17 +1,17 @@
 # Compiler and flags
 CXX := g++
-CXXFLAGS := -std=c++20 -Wall -Wextra
+CXXFLAGS := -std=c++20 -Wall -Wextra -Og -g
 
 # Include paths
 INCLUDES := -Isrc -Isrc/serial -Iexternal/cxxopts/include
 
 # Source and object files
 SRCDIR := src
-OBJDIR := build
+OBJDIR := obj
 BINDIR := bin
 TARGET := $(BINDIR)/seriterm
 
-SOURCES := $(wildcard $(SRCDIR)/*.cpp)
+SOURCES := $(shell find $(SRCDIR) -name '*.cpp')
 OBJECTS := $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SOURCES))
 
 # Default target
@@ -24,8 +24,8 @@ $(TARGET): $(OBJECTS)
 
 # Compile source files into object files
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
-	@mkdir -p $(OBJDIR)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -Og -c -o $@ $<
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $<
 
 # Clean build artifacts
 clean:

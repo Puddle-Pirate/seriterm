@@ -3,10 +3,14 @@
 #include <cstdlib>
 
 #include <cxxopts.hpp>
+#include "port.hpp"
 
 
 int main(int argc, char* argv[])
 {
+   std::string portArg;
+   int baudArg;
+
    try {
       cxxopts::Options options("seriterm", "A modern serial terminal with line editing and history");
 
@@ -22,10 +26,11 @@ int main(int argc, char* argv[])
          return 0;
       }
 
-      std::string port = result["port"].as<std::string>();
-      int baud = result["baud"].as<int>();
+      portArg = result["port"].as<std::string>();
+      baudArg = result["baud"].as<int>();
 
-      std::cout << "Opening serial port: " << port << " at " << baud << " baud\n";
+
+      std::cout << "Opening serial port: " << portArg << " at " << baudArg << " baud\n";
 
       // Later: Initialize terminal, line editor, and event loop
       // seriterm::run(port, baud);
@@ -35,6 +40,20 @@ int main(int argc, char* argv[])
       return 1;
    }
 
+   try {
+      serial::Port port(portArg, baudArg);
+
+      port.startBackgroundReader([](char c) {
+         std::cout << "Received: " << c << "\n";
+      });
+
+      // do other work...
+      std::this_thread::sleep_for(std::chrono::seconds(100));
+      port.stopBackgroundReader();
+   } catch (std::exception& e) {
+      std::cerr << "Internal seriterm error:  " << e.what() << "\n";
+      return 1;
+   }
 
 
 

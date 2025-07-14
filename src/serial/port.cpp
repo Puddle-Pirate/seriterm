@@ -1,4 +1,5 @@
 #include <fcntl.h>
+#include <functional>
 #include <unistd.h>
 #include <iostream>
 #include <cstring>
@@ -35,6 +36,35 @@ Port::~Port()
 {
    tcsetattr(fdHdl.fd, TCSANOW, &originalTTY);
    tcflush(fdHdl.fd, TCIOFLUSH);  // TODO: Is this necessary?
+}
+
+void Port::startBackgroundReader(std::function<void(char)> onByteRx)
+{
+   if (doBgRead) throw std::logic_error("Tried to start bg reader twice.");
+   doBgRead = true;
+
+   bgReaderThread = std::thread([this, onByteRx]()
+   {
+      while (doBgRead) {
+         fd_set readfds;
+         FD_ZERO(&readfds);
+         FD_SET(fdHdl.fd, &readfds);
+
+         timeval tv = { .tv_sec = 0, .tv_usec = 500000 }; // 0.5 sec poll
+         int ret = select(fdHdl.fd + 1, &readfds, nullptr, nullptr, &tv);
+         if (ret > 0 && FD_ISSET(fdHdl.fd, &readfds)) {
+            char byte;
+            if (read(fdHdl.fd, &byte, 1) == 1) onByteRx(byte);
+         }
+      }
+   });
+
+}
+
+void Port::stopBackgroundReader()
+{
+   doBgRead = true;
+   if (bgReaderThread.joinable()) bgReaderThread.join();
 }
 
 }
