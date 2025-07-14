@@ -5,7 +5,8 @@
 #include <cxxopts.hpp>
 
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
    try {
       cxxopts::Options options("seriterm", "A modern serial terminal with line editing and history");
 

@@ -9,13 +9,9 @@ namespace serial
 
 
 // RAII-styled wrapper to ensure fd's are open/closed properly.
-class FdHandle
+struct FdHandle
 {
-private:
-   int fd;
-
-public:
-   FdHandle() = default;
+   int const fd;
 
    explicit FdHandle(const std::string& path, int flags)
       : fd(open(path.c_str(), flags))
@@ -25,32 +21,14 @@ public:
 
    ~FdHandle()
    {
-      if (fd >= 0) close(fd);
+      close(fd);
    }
 
-   // Non-copyable
+   // Non-copyable/non-movable
    FdHandle(const FdHandle&) = delete;
    FdHandle& operator=(const FdHandle&) = delete;
-
-   // Movable
-   FdHandle(FdHandle&& other) noexcept
-      : fd(other.fd)
-   {
-      other.fd = -1;
-   }
-
-   FdHandle& operator=(FdHandle&& other) noexcept
-   {
-      if (this != &other) {
-         if (fd >= 0) close(fd);
-         fd = other.fd;
-         other.fd = -1;
-      }
-      return *this;
-   }
-
-   int get() const { return fd; }
-   bool isValid() const { return fd >= 0; }
+   FdHandle(FdHandle&& other) = delete;
+   FdHandle& operator=(FdHandle&& other) = delete;
 };
 
 }
