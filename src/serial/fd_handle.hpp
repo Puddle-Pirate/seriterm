@@ -24,6 +24,8 @@ struct FdHandle
       close(fd);
    }
 
+   operator int() const { return fd; }
+
    // Non-copyable/non-movable
    FdHandle(const FdHandle&) = delete;
    FdHandle& operator=(const FdHandle&) = delete;
