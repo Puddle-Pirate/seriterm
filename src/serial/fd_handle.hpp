@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string>
+#include <system_error>
 
 namespace serial
 {
@@ -16,7 +17,9 @@ struct FdHandle
    explicit FdHandle(const std::string& path, int flags)
       : fd(open(path.c_str(), flags))
    {
-      if (fd < 0) throw errno;
+      if (fd < 0) {
+         throw std::system_error(errno, std::generic_category(), "Failed to open " + path);
+      }
    }
 
    ~FdHandle()

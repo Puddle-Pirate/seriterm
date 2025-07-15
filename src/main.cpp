@@ -5,12 +5,10 @@
 #include <cxxopts.hpp>
 #include "port.hpp"
 
+static void ProgramLoop(std::string, int);
 
 int main(int argc, char* argv[])
 {
-   std::string portArg;
-   int baudArg;
-
    try {
       cxxopts::Options options("seriterm", "A modern serial terminal with line editing and history");
 
@@ -26,36 +24,34 @@ int main(int argc, char* argv[])
          return 0;
       }
 
-      portArg = result["port"].as<std::string>();
-      baudArg = result["baud"].as<int>();
+      auto portArg = result["port"].as<std::string>();
+      auto baudArg = result["baud"].as<int>();
 
+      ProgramLoop(portArg, baudArg);
 
-      std::cout << "Opening serial port: " << portArg << " at " << baudArg << " baud\n";
-
-      // Later: Initialize terminal, line editor, and event loop
-      // seriterm::run(port, baud);
-
-   } catch (const cxxopts::exceptions::exception& e) {
+   } catch (cxxopts::exceptions::exception const& e) {
       std::cerr << "Error parsing options: " << e.what() << "\n";
       return 1;
+   } catch (std::exception const& e) {
+      std::cerr << "Error: " << e.what() << "\n";
+      return 2;
+   } catch (...) {
+      std::cerr << "Internal error: " << errno << "\n";
+      return -1;
    }
-
-   try {
-      serial::Port port(portArg, baudArg);
-
-      port.startBackgroundReader([](char c) {
-         std::cout << "Received: " << c << "\n";
-      });
-
-      // do other work...
-      std::this_thread::sleep_for(std::chrono::seconds(10));
-      port.stopBackgroundReader();
-   } catch (std::exception& e) {
-      std::cerr << "Internal seriterm error:  " << e.what() << "\n";
-      return 1;
-   }
-
-
 
    return 0;
+}
+
+static void ProgramLoop(std::string portArg, int baudArg)
+{
+   serial::Port port(portArg, baudArg);
+
+   port.startBackgroundReader([](char c) {
+      std::cout << c;
+   });
+
+   std::this_thread::sleep_for(std::chrono::seconds(10));
+   port.stopBackgroundReader();
+
 }
