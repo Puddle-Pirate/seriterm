@@ -63,7 +63,7 @@ void Port::startBackgroundReader(std::function<void(char)> onByteRx)
 
 void Port::stopBackgroundReader()
 {
-   doBgRead = true;
+   doBgRead = false;
    if (bgReaderThread.joinable()) bgReaderThread.join();
 }
 

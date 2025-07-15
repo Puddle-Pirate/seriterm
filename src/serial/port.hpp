@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <atomic>
 #include <string>
 #include <termios.h>
 #include <thread>
@@ -38,7 +39,7 @@ private:
    Baud const baud;
    termios originalTTY; // Capture and restore outer terminal settings.
    std::thread bgReaderThread{};
-   bool doBgRead{false};
+   std::atomic_bool doBgRead{false};
 
 public:
    Port(std::string const& devicePath, int baudRate);

@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
       });
 
       // do other work...
-      std::this_thread::sleep_for(std::chrono::seconds(100));
+      std::this_thread::sleep_for(std::chrono::seconds(10));
       port.stopBackgroundReader();
    } catch (std::exception& e) {
       std::cerr << "Internal seriterm error:  " << e.what() << "\n";
