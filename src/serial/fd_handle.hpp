@@ -8,7 +8,6 @@
 namespace serial
 {
 
-
 // RAII-styled wrapper to ensure fd's are open/closed properly.
 struct FdHandle
 {
@@ -22,10 +21,7 @@ struct FdHandle
       }
    }
 
-   ~FdHandle()
-   {
-      close(fd);
-   }
+   ~FdHandle() { close(fd); }
 
    operator int() const { return fd; }
 

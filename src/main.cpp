@@ -47,11 +47,24 @@ static void ProgramLoop(std::string portArg, int baudArg)
 {
    serial::Port port(portArg, baudArg);
 
-   port.startBackgroundReader([](char c) {
-      std::cout << c;
-   });
+   while (true)
+   {
+      fd_set readfds;
+      FD_ZERO(&readfds);
+      FD_SET(port.fd, &readfds);
+      FD_SET(STDIN_FILENO, &readfds);
 
-   std::this_thread::sleep_for(std::chrono::seconds(10));
-   port.stopBackgroundReader();
+      int maxfd = std::max<int>(port.fd, STDIN_FILENO) + 1;
+      int ret = select(maxfd, &readfds, nullptr, nullptr, nullptr);
+      if (ret < 0) throw std::runtime_error("select() failed");
+
+      if (FD_ISSET(port.fd, &readfds)) {
+         // handle input
+      }
+
+      if (FD_ISSET(STDIN_FILENO, &readfds)) {
+         // handle output
+      }
+   }
 
 }

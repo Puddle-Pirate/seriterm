@@ -35,13 +35,11 @@ struct Baud
 class Port
 {
 private:
-   FdHandle const fdHdl;
    Baud const baud;
    termios originalTTY; // Capture and restore outer terminal settings.
-   std::thread bgReaderThread{};
-   std::atomic_bool doBgRead{false};
 
 public:
+   FdHandle const fd;
    Port(std::string const& devicePath, int baudRate);
    ~Port();
 

@@ -1,7 +1,7 @@
 # Compiler and flags
-CXX := g++
-CXXFLAGS := -std=c++20 -Wall -Wextra -Og -g
-
+SDKROOT := $(shell xcrun --show-sdk-path) # I hate that I have to do this right now. Curse you apple.
+CXX := clang++
+CXXFLAGS := -std=c++23 -Wall -Wextra -Og -g -isysroot $(SDKROOT)
 # Include paths
 INCLUDES := -Isrc -Isrc/serial -Iexternal/cxxopts/include
 
