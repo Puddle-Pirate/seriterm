@@ -3,7 +3,7 @@ SDKROOT := $(shell xcrun --show-sdk-path) # I hate that I have to do this right 
 CXX := clang++
 CXXFLAGS := -std=c++23 -Wall -Wextra -Og -g -isysroot $(SDKROOT)
 # Include paths
-INCLUDES := -Isrc -Isrc/serial -Iexternal/cxxopts/include
+INCLUDES := -Isrc -Isrc/serial -Iexternal/cxxopts/include Iexternal/linenoise
 
 # Source and object files
 SRCDIR := src
@@ -11,7 +11,7 @@ OBJDIR := obj
 BINDIR := bin
 TARGET := $(BINDIR)/seriterm
 
-SOURCES := $(shell find $(SRCDIR) -name '*.cpp')
+SOURCES := $(shell find $(SRCDIR) -name '*.cpp') external/linenoise/linenoise.c
 OBJECTS := $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SOURCES))
 
 # Default target
