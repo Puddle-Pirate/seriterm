@@ -16,7 +16,10 @@ CXXFLAGS := -std=c++20 -Wall -Wextra -Og -g -isysroot $(SDKROOT)
 CFLAGS   := -Wall -Wextra -Og -g -isysroot $(SDKROOT)
 
 # Include paths
-INCLUDES := -I$(SRCDIR) -I$(SRCDIR)/serial -I$(EXTDIR)/cxxopts/include -I$(EXTDIR)/linenoise
+INCLUDES := -I$(SRCDIR) \
+				-I$(SRCDIR)/serial \
+				-I$(EXTDIR)/cxxopts/include \
+				-I$(EXTDIR)/linenoise \
 
 # Source discovery
 CPP_SOURCES := $(shell find $(SRCDIR) -name '*.cpp')

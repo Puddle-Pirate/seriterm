@@ -4,6 +4,7 @@
 
 #include <cxxopts.hpp>
 #include "port.hpp"
+#include "line_buffer.hpp"
 
 static void ProgramLoop(std::string, int);
 
@@ -46,6 +47,7 @@ int main(int argc, char* argv[])
 static void ProgramLoop(std::string portArg, int baudArg)
 {
    serial::Port port(portArg, baudArg);
+   terminal::LineEditor editor(STDIN_FILENO, STDOUT_FILENO);
 
    while (true)
    {
@@ -59,11 +61,19 @@ static void ProgramLoop(std::string portArg, int baudArg)
       if (ret < 0) throw std::runtime_error("select() failed");
 
       if (FD_ISSET(port.fd, &readfds)) {
-         // handle input
+
       }
 
       if (FD_ISSET(STDIN_FILENO, &readfds)) {
-         // handle output
+         auto maybeLine = editor.feed();
+         if (maybeLine) {
+            std::string_view line = *maybeLine;
+            // process input
+            std::cout << "sent: " << line << "";
+
+            // restart editing for next line
+            editor.restart();
+         }
       }
    }
 
