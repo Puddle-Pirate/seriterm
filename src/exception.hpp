@@ -17,6 +17,14 @@ public:
       : std::runtime_error("Terminal error: " + message) {}
 };
 
+class GracefulException : public std::exception
+{
+public:
+   GracefulException() {}
+};
+
+inline std::string cErrStr() { return strerror(errno); }
+
 class Assert
 {
 public:

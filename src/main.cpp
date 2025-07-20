@@ -3,6 +3,7 @@
 #include <cstdlib>
 
 #include <cxxopts.hpp>
+#include "echostream.hpp"
 #include "port.hpp"
 #include "line_edit.hpp"
 
@@ -33,6 +34,9 @@ int main(int argc, char* argv[])
    } catch (cxxopts::exceptions::exception const& e) {
       std::cerr << "Error parsing options: " << e.what() << "\n";
       return 1;
+   } catch (GracefulException) {
+      std::cerr << "Exiting." << "\n";
+      return 0;
    } catch (std::exception const& e) {
       std::cerr << "Error: " << e.what() << "\n";
       return 2;
@@ -47,6 +51,7 @@ int main(int argc, char* argv[])
 static void ProgramLoop(std::string portArg, int baudArg)
 {
    serial::Port port(portArg, baudArg);
+   serial::EchoStream echo;
    terminal::LineEditor editor(STDIN_FILENO, STDOUT_FILENO);
 
    while (true)
@@ -57,20 +62,24 @@ static void ProgramLoop(std::string portArg, int baudArg)
       FD_SET(STDIN_FILENO, &readfds);
 
       int maxfd = std::max<int>(port.fd, STDIN_FILENO) + 1;
-      int ret = select(maxfd, &readfds, nullptr, nullptr, nullptr);
-      if (ret < 0) throw std::runtime_error("select() failed: " + std::string(strerror(errno)));
+      int selectResult;
+      do {
+         selectResult = select(maxfd, &readfds, nullptr, nullptr, nullptr);
+      } while (selectResult == -1 && errno == EINTR);
+      if (selectResult < 0) {
+         throw std::runtime_error("select() failed: " + cErrStr());
+      }
 
       if (FD_ISSET(port.fd, &readfds)) {
          editor.hide();
-
+         echo.feed(port.read());
          editor.show();
       }
 
       if (FD_ISSET(STDIN_FILENO, &readfds)) {
          auto gotLine = editor.feed();
          if (gotLine) {
-            //TEMP DEBUG
-            std::cout << "sent: " << *gotLine << "";
+            port.write(*gotLine);
          }
       }
    }

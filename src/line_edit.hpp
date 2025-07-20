@@ -1,5 +1,6 @@
 #pragma once
 
+#include "exception.hpp"
 #include "linenoise.h"
 #include <string>
 #include <optional>
@@ -41,9 +42,8 @@ public:
    {
       auto* lnResult = linenoiseEditFeed(&lnState);
 
-      if (lnResult == linenoiseEditMore || lnResult == nullptr) {
-         return std::nullopt;
-      }
+      if (lnResult == nullptr) throw GracefulException();
+      if (lnResult == linenoiseEditMore) return std::nullopt;
 
       std::string line(lnResult);
       linenoiseFree(lnResult);

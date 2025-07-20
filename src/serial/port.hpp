@@ -35,6 +35,7 @@ struct Baud
 class Port
 {
 private:
+   static constexpr size_t READ_BUF_SIZE = 256;
    Baud const baud;
    termios originalTTY; // Capture and restore outer terminal settings.
 
@@ -42,10 +43,10 @@ public:
    FdHandle const fd;
    Port(std::string const& devicePath, int baudRate)
       : baud(baudRate),
-      fd(devicePath, O_RDWR | O_NOCTTY | O_SYNC)
+        fd(devicePath, O_RDWR | O_NOCTTY | O_SYNC)
    {
       if (tcgetattr(fd, &originalTTY) != 0) {
-         throw TerminalException("Failed to get terminal attributes: " + std::string(strerror(errno)));
+         throw TerminalException("Failed to get terminal attributes: " + cErrStr());
       }
 
       auto tty = originalTTY;
@@ -56,7 +57,7 @@ public:
       tty.c_cflag |= (CLOCAL | CREAD); // Enable receiver, ignore modem control lines
 
       if (tcsetattr(fd, TCSANOW, &tty) != 0) {
-         throw TerminalException("Failed to set terminal attributes: " + std::string(strerror(errno)));
+         throw TerminalException("Failed to set terminal attributes: " + cErrStr());
       }
 
       tcflush(fd, TCIOFLUSH);
@@ -68,8 +69,32 @@ public:
       tcflush(fd, TCIOFLUSH);  // TODO: Is this necessary?
    }
 
-   void startBackgroundReader(std::function<void(char)> onByteRx);
-   void stopBackgroundReader();
+   std::string read()
+   {
+      std::array<char, READ_BUF_SIZE> buffer;
+
+      auto bytesRead = ::read(fd, buffer.data(), buffer.size());
+      if (bytesRead < 0)
+      {
+         if (errno == EAGAIN || errno == EWOULDBLOCK) return {}; // non-fatal, no data ready
+         throw SerialException("Serial read error: " + cErrStr());
+      }
+
+      return std::string(buffer.data(), static_cast<size_t>(bytesRead));
+   }
+
+   void write(std::string_view data)
+   {
+      size_t totalWritten = 0;
+      while (totalWritten < data.size()) {
+         auto written = ::write(fd, data.data() + totalWritten, data.size() - totalWritten);
+         if (written < 0) {
+            if (errno == EINTR) continue; // retry on interrupt
+            throw SerialException("Serial write error: " + cErrStr());
+         }
+         totalWritten += static_cast<size_t>(written);
+      }
+   }
 
 };
 
