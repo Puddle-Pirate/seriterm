@@ -29,7 +29,6 @@ private:
    void stop()
    {
       linenoiseEditStop(&lnState);
-      //linenoiseFree();
    }
 
 public:
@@ -44,15 +43,17 @@ public:
       stop();
    }
 
-   std::optional<std::string_view> feed()
+   std::optional<std::string> feed()
    {
-      auto* line = linenoiseEditFeed(&lnState);
+      auto* lnResult = linenoiseEditFeed(&lnState);
 
-      if (line == linenoiseEditMore || line == nullptr) {
+      if (lnResult == linenoiseEditMore || lnResult == nullptr) {
          return std::nullopt;
       }
 
-      return std::string_view(line);
+      std::string line(lnResult);
+      linenoiseFree(lnResult);
+      return line;
    }
 
    void restart()

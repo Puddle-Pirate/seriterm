@@ -4,7 +4,7 @@
 
 #include <cxxopts.hpp>
 #include "port.hpp"
-#include "line_buffer.hpp"
+#include "line_edit.hpp"
 
 static void ProgramLoop(std::string, int);
 
@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
       std::cerr << "Error: " << e.what() << "\n";
       return 2;
    } catch (...) {
-      std::cerr << "Internal error: " << errno << "\n";
+      std::cerr << "Internal error: " << std::string(strerror(errno)) << "\n";
       return -1;
    }
 
@@ -58,20 +58,17 @@ static void ProgramLoop(std::string portArg, int baudArg)
 
       int maxfd = std::max<int>(port.fd, STDIN_FILENO) + 1;
       int ret = select(maxfd, &readfds, nullptr, nullptr, nullptr);
-      if (ret < 0) throw std::runtime_error("select() failed");
+      if (ret < 0) throw std::runtime_error("select() failed: " + std::string(strerror(errno)));
 
       if (FD_ISSET(port.fd, &readfds)) {
-
+         // TODO
       }
 
       if (FD_ISSET(STDIN_FILENO, &readfds)) {
          auto maybeLine = editor.feed();
          if (maybeLine) {
-            std::string_view line = *maybeLine;
-            // process input
-            std::cout << "sent: " << line << "";
-
-            // restart editing for next line
+            //TEMP DEBUG
+            std::cout << "sent: " << *maybeLine << "";
             editor.restart();
          }
       }
