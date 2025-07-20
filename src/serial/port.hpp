@@ -40,8 +40,33 @@ private:
 
 public:
    FdHandle const fd;
-   Port(std::string const& devicePath, int baudRate);
-   ~Port();
+   Port(std::string const& devicePath, int baudRate)
+      : baud(baudRate),
+      fd(devicePath, O_RDWR | O_NOCTTY | O_SYNC)
+   {
+      if (tcgetattr(fd, &originalTTY) != 0) {
+         throw TerminalException("Failed to get terminal attributes: " + std::string(strerror(errno)));
+      }
+
+      auto tty = originalTTY;
+      cfmakeraw(&tty);
+
+      cfsetispeed(&tty, baud);
+      cfsetospeed(&tty, baud);
+      tty.c_cflag |= (CLOCAL | CREAD); // Enable receiver, ignore modem control lines
+
+      if (tcsetattr(fd, TCSANOW, &tty) != 0) {
+         throw TerminalException("Failed to set terminal attributes: " + std::string(strerror(errno)));
+      }
+
+      tcflush(fd, TCIOFLUSH);
+   }
+
+   ~Port()
+   {
+      tcsetattr(fd, TCSANOW, &originalTTY);
+      tcflush(fd, TCIOFLUSH);  // TODO: Is this necessary?
+   }
 
    void startBackgroundReader(std::function<void(char)> onByteRx);
    void stopBackgroundReader();

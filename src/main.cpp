@@ -61,15 +61,16 @@ static void ProgramLoop(std::string portArg, int baudArg)
       if (ret < 0) throw std::runtime_error("select() failed: " + std::string(strerror(errno)));
 
       if (FD_ISSET(port.fd, &readfds)) {
-         // TODO
+         editor.hide();
+
+         editor.show();
       }
 
       if (FD_ISSET(STDIN_FILENO, &readfds)) {
-         auto maybeLine = editor.feed();
-         if (maybeLine) {
+         auto gotLine = editor.feed();
+         if (gotLine) {
             //TEMP DEBUG
-            std::cout << "sent: " << *maybeLine << "";
-            editor.restart();
+            std::cout << "sent: " << *gotLine << "";
          }
       }
    }

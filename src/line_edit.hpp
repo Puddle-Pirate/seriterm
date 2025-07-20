@@ -26,10 +26,7 @@ private:
       }
    }
 
-   void stop()
-   {
-      linenoiseEditStop(&lnState);
-   }
+   void stop() { linenoiseEditStop(&lnState); }
 
 public:
    LineEditor(int stdinFd, int stdoutFd, size_t bufSize = 1024, std::string const& prompt = "> ")
@@ -38,10 +35,7 @@ public:
       start();
    }
 
-   ~LineEditor()
-   {
-      stop();
-   }
+   ~LineEditor() { stop(); }
 
    std::optional<std::string> feed()
    {
@@ -53,14 +47,13 @@ public:
 
       std::string line(lnResult);
       linenoiseFree(lnResult);
+      stop();
+      start();
       return line;
    }
 
-   void restart()
-   {
-      stop();
-      start();
-   }
+   void hide() { linenoiseHide(&lnState); }
+   void show() { linenoiseShow(&lnState); }
 };
 
 }
